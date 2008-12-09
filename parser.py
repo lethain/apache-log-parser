@@ -8,32 +8,54 @@ import re
 from optparse import OptionParser
 from operator import itemgetter
 
-def parse(filename, cutoff=None, quantity=None):
+"""
+"GET /feeds/series/two-faced-django/ HTTP/1.0" 200 720 "-" "Feedfetcher-Google; (+http://www.google.com/feedfetcher.html; 6 subscribers; feed-id=9590656098396809912)"
+
+"NewsGatorOnline/2.0 (http://www.newsgator.com; 39 subscribers)"
+"Netvibes (http://www.netvibes.com/; 5 subscribers; feedId: 5404723)"
+
+"""
+
+def restrict(lst, cutoff, count):
+    'Restrict the list by minimum value or count.'
+    if cutoff:
+        lst = (x for x in lst if x[1] > cutoff)
+    if count:
+        lst = lst[:count]
+    return lst
+
+def parse(filename):
+    'Return tuple of dictionaries containing file data.'
+    def make_entry(x):
+        return { 'uri':x.group(1) }
     log_re = '"GET (.*?) HTTP/1.\d"'
     search = re.compile(log_re).search
-
-    hist = {}
     matches = (search(line) for line in file(filename))
-    uris = (x.group(1) for x in matches if x)
-    
-    for uri in uris:
-        if uri in hist:
-            hist[uri] = hist[uri] + 1
+    return (make_entry(x) for x in matches if x)
+
+def count_value(lst, key):
+    d = {}
+    for obj in lst:
+        val = obj[key]
+        if val in d:
+            d[val] = d[val] + 1
         else:
-            hist[uri] = 1
+            d[val] = 1
+    return d.iteritems()
 
-    sorted_lst = sorted(hist.iteritems(), key=itemgetter(1), reverse=True)
+def print_results(lst):
+    for item in lst:
+        print "%s => %s" % (item[0], item[1])
 
-    if cutoff:
-        sorted_lst = (x for x in sorted_lst if x[1] > cutoff)
-    if quantity:
-        sorted_lst = sorted_lst[:quantity]
-
-    for uri,count in sorted_lst:
-        print "%s => %s" % (uri, count)
+def hits(filename, cutoff, quantity):
+    entries = parse(filename)
+    lst = count_value(entries, 'uri')
+    lst = sorted(lst, key=itemgetter(1), reverse=True)
+    lst =  restrict(lst, cutoff, quantity)
+    print_results(lst)
 
 def main():
-    p = OptionParser("usage: parser.py file")
+    p = OptionParser("usage: parser.py file hits|subscribers")
     p.add_option('-c','--cutoff',dest='cutoff',
                  help="CUTOFF for minimum hits",
                  metavar="CUTOFF")
@@ -43,9 +65,21 @@ def main():
     (options, args) = p.parse_args()
     if len(args) < 1:
         p.error("must specify a file to parse")
+    if len(args) < 2:
+        p.error("must specify report type to generate")
+
+
+    filename = args[0]
+    report_type = args[1]
     cutoff = int(options.cutoff) if options.cutoff else None
     qty = int(options.quantity) if options.quantity else None
-    parse(args[0], cutoff=cutoff, quantity=qty)
+    
+    if report_type == 'hits':
+        hits(filename, cutoff=cutoff, quantity=qty)
+    elif report_type == 'subscribers':
+        subscribers(filename, cutoff=cutoff, quantity=qty)
+    else:
+        p.error("specified an invalid report type")
 
 if __name__ == '__main__':
     main()
