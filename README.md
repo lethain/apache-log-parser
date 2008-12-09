@@ -6,8 +6,24 @@ from Apache log files.
 
 At this time it supports generating supports for:
 
-* 
+* **uri** - pageviews for each uri
+* **time** - datetime with highest request/second
+* **status_code** - hits for each http status code
+* **agent** - hits for each user agent
+* **subscriptions** - the number of feed subscribers per uri.
+    This is done by parsing user agents for their subscriber count.
 
+## Usage
+
+Here are some example uses:
+
+    python parser.py access.log subscriptions
+    python parser.py access.log uri --quantity 5
+    python parser.py access.log agent --cutoff 100
+
+There is help available at the command-line as well.
+
+    python parser.py --help
 
 
 ## User agents successfully parsed for feed subscribers
