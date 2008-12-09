@@ -29,11 +29,13 @@ def parse(filename):
     'Return tuple of dictionaries containing file data.'
     def make_entry(x):
         return { 
+            'server_ip':x.group('ip'),
             'uri':x.group('uri'),
             'time':x.group('time'),
             'status_code':x.group('status_code'),
+            'agent':x.group('agent'),
             }
-    log_re = '(?P<ip>[.\d]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?) HTTP/1.\d" (?P<status_code>\d+) \d+ ".*?"'
+    log_re = '(?P<ip>[.\d]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?) HTTP/1.\d" (?P<status_code>\d+) \d+ ".*?" "(?P<agent>.*?)"'
     search = re.compile(log_re).search
     matches = (search(line) for line in file(filename))
     return (make_entry(x) for x in matches if x)
@@ -61,7 +63,7 @@ def generic_report_for_key(key, filename, cutoff, quantity):
     print_results(lst)
 
 def main():
-    p = OptionParser("usage: parser.py file uri|time")
+    p = OptionParser("usage: parser.py file uri|time|status_code|agent")
     p.add_option('-c','--cutoff',dest='cutoff',
                  help="CUTOFF for minimum hits",
                  metavar="CUTOFF")
@@ -82,7 +84,7 @@ def main():
     
     if report_type == 'subscribers':
         subscribers(filename, cutoff=cutoff, quantity=qty)
-    elif report_type in ['uri','time','status_code']:
+    elif report_type in ['uri','time','status_code','agent']:
         generic_report_for_key(report_type, filename, cutoff, qty)
     else:
         p.error("specified an invalid report type")
