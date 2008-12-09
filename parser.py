@@ -31,9 +31,9 @@ def parse(filename):
         return { 
             'uri':x.group('uri'),
             'time':x.group('time'),
+            'status_code':x.group('status_code'),
             }
-    # log_re = '"GET (?P<uri>.*?) HTTP/1.\d"'   HTTP/1.0" 200 66736 "-" "CFNetwork/129.22"'
-    log_re = '(?P<ip>[.\d]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?)"'
+    log_re = '(?P<ip>[.\d]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?) HTTP/1.\d" (?P<status_code>\d+) \d+ ".*?"'
     search = re.compile(log_re).search
     matches = (search(line) for line in file(filename))
     return (make_entry(x) for x in matches if x)
@@ -61,7 +61,7 @@ def generic_report_for_key(key, filename, cutoff, quantity):
     print_results(lst)
 
 def main():
-    p = OptionParser("usage: parser.py file uri|time|subscribers")
+    p = OptionParser("usage: parser.py file uri|time")
     p.add_option('-c','--cutoff',dest='cutoff',
                  help="CUTOFF for minimum hits",
                  metavar="CUTOFF")
@@ -82,7 +82,7 @@ def main():
     
     if report_type == 'subscribers':
         subscribers(filename, cutoff=cutoff, quantity=qty)
-    elif report_type in ['uri','time']:
+    elif report_type in ['uri','time','status_code']:
         generic_report_for_key(report_type, filename, cutoff, qty)
     else:
         p.error("specified an invalid report type")
