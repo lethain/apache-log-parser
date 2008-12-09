@@ -4,7 +4,7 @@ Inspired by
     http://blog.modp.com/2008/09/sorting-python-dictionary-by-value-take.html
 """
 
-import re
+import re, operator
 from optparse import OptionParser
 from operator import itemgetter
 
@@ -94,22 +94,42 @@ livedoor FeedFetcher/0.01 (http://reader.livedoor.com/; 1 subscriber)
 
 
     feed_re = '(?P<name>.*?) \(.*?; (?P<count>\d+) subscribers?(; .*?)?\)'
+    feed_re2 = '(?P<name>.*?);? (?P<count>\d+) (S|s)ubscribers?'
     search = re.compile(feed_re).search
+    search2 = re.compile(feed_re2).search
+
+    results = []
     for key, readers in feeds.iteritems():
+        # remove duplicate subscriptions to avoid
+        # double counting
         sources = {}
         for reader in readers:
             m = search(reader)
             if not m:
-                print "did not match: %s" % reader
-            else:
-                pass
-                #print "match: %s %s" % (m.group('name'), m.group('count'))
-            #print reader
+                m = search2(reader)
+            
+            if m:
+                name = m.group('name')
+                count = int(m.group('count'))
+                if name in sources:
+                    if sources[name] < count:
+                        sources[name] = count
+                else:
+                    sources[name] = count
+        
+        # sum subscription totals
+        vals = ( val for key,val in sources.iteritems())
+        sum = reduce(operator.add, vals, 0)
 
+        # there can be false positives with weird user agents,
+        # but they won't have any subscribers listed, so we
+        # filter them out here
+        if sum > 0:
+            results.append((key, sum))
 
-    #print feeds['/']
-    #lst = restrict(lst, cutoff, quantity)
-    #print_results(lst)
+    results = sorted(results, key=itemgetter(1), reverse=True)
+    results = restrict(results, cutoff, quantity)
+    print_results(results)
     
 
 def main():
