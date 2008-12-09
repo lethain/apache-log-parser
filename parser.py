@@ -52,18 +52,38 @@ def count_value(lst, key):
 
 def print_results(lst):
     for item in lst:
-        print "%s => %s" % (item[0], item[1])
+        print "%50s %10s" % (item[0], item[1])
 
 
 def generic_report_for_key(key, filename, cutoff, quantity):
+    'Handles creating generic reports.'
     entries = parse(filename)
     lst = count_value(entries, key)
     lst = sorted(lst, key=itemgetter(1), reverse=True)
     lst =  restrict(lst, cutoff, quantity)
     print_results(lst)
 
+def subscriptions(filename, cutoff, quantity):
+    'Creates a custom report for determining number of subscribers per feed.'
+    entries = parse(filename)
+    entries = (x for x in entries if 'ubscriber' in x['agent'])
+
+    feeds = {}
+    for obj in entries:
+        uri = obj['uri']
+        agent = obj['agent']
+        if uri in feeds:
+            feeds[uri].append(agent)
+        else:
+            feeds[uri] = [agent]
+
+    print feeds['/']
+    #lst = restrict(lst, cutoff, quantity)
+    #print_results(lst)
+    
+
 def main():
-    p = OptionParser("usage: parser.py file uri|time|status_code|agent")
+    p = OptionParser("usage: parser.py file uri|time|status_code|agent|subscriptions")
     p.add_option('-c','--cutoff',dest='cutoff',
                  help="CUTOFF for minimum hits",
                  metavar="CUTOFF")
@@ -82,8 +102,8 @@ def main():
     cutoff = int(options.cutoff) if options.cutoff else None
     qty = int(options.quantity) if options.quantity else None
     
-    if report_type == 'subscribers':
-        subscribers(filename, cutoff=cutoff, quantity=qty)
+    if report_type == 'subscriptions':
+        subscriptions(filename, cutoff=cutoff, quantity=qty)
     elif report_type in ['uri','time','status_code','agent']:
         generic_report_for_key(report_type, filename, cutoff, qty)
     else:
