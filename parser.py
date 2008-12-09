@@ -1,21 +1,6 @@
-"""
-Inspired by 
-    http://effbot.org/zone/wide-finder.htm
-    http://blog.modp.com/2008/09/sorting-python-dictionary-by-value-take.html
-"""
-
 import re, operator
 from optparse import OptionParser
 from operator import itemgetter
-
-"""
-"GET /feeds/series/two-faced-django/ HTTP/1.0" 200 720 "-" "Feedfetcher-Google; (+http://www.google.com/feedfetcher.html; 6 subscribers; feed-id=9590656098396809912)"
-
-"NewsGatorOnline/2.0 (http://www.newsgator.com; 39 subscribers)"
-"Netvibes (http://www.netvibes.com/; 5 subscribers; feedId: 5404723)"
-
-127.0.0.1 - - [02/Dec/2008:09:11:06 -0600] "GET /feeds/flow/code/ HTTP/1.0" 200 66736 "-" "CFNetwork/129.22"
-"""
 
 def restrict(lst, cutoff, count):
     'Restrict the list by minimum value or count.'
@@ -54,7 +39,6 @@ def print_results(lst):
     for item in lst:
         print "%50s %10s" % (item[0], item[1])
 
-
 def generic_report_for_key(key, filename, cutoff, quantity):
     'Handles creating generic reports.'
     entries = parse(filename)
@@ -77,37 +61,20 @@ def subscriptions(filename, cutoff, quantity):
         else:
             feeds[uri] = [agent]
 
-    """
-Feedfetcher-Google; (+http://www.google.com/feedfetcher.html; 3 subscribers; feed-id=7675226481817637975)
-Netvibes (http://www.netvibes.com/; 5 subscribers; feedId: 5404723)
-
-
-Bloglines/3.1 (http://www.bloglines.com; 1 subscriber)
-NewsGatorOnline/2.0 (http://www.newsgator.com; 1 subscribers)
-Zhuaxia.com 1 Subscribers
-AideRSS/1.0 (aiderss.com); 2 subscribers
-xianguo-rssbot/0.1 (http://www.xianguo.com/; 1 subscribers)
-Fastladder FeedFetcher/0.01 (http://fastladder.com/; 1 subscriber)
-HanRSS/1.1 (http://www.hanrss.com; 1 subscriber)
-livedoor FeedFetcher/0.01 (http://reader.livedoor.com/; 1 subscriber)
-    """
-
-
     feed_re = '(?P<name>.*?) \(.*?; (?P<count>\d+) subscribers?(; .*?)?\)'
     feed_re2 = '(?P<name>.*?);? (?P<count>\d+) (S|s)ubscribers?'
     search = re.compile(feed_re).search
     search2 = re.compile(feed_re2).search
 
+    # remove duplicate subscriptions to avoid
+    # double counting
     results = []
     for key, readers in feeds.iteritems():
-        # remove duplicate subscriptions to avoid
-        # double counting
         sources = {}
         for reader in readers:
             m = search(reader)
             if not m:
                 m = search2(reader)
-            
             if m:
                 name = m.group('name')
                 count = int(m.group('count'))
@@ -131,7 +98,6 @@ livedoor FeedFetcher/0.01 (http://reader.livedoor.com/; 1 subscriber)
     results = restrict(results, cutoff, quantity)
     print_results(results)
     
-
 def main():
     p = OptionParser("usage: parser.py file uri|time|status_code|agent|subscriptions")
     p.add_option('-c','--cutoff',dest='cutoff',
@@ -145,7 +111,6 @@ def main():
         p.error("must specify a file to parse")
     if len(args) < 2:
         p.error("must specify report type to generate")
-
 
     filename = args[0]
     report_type = args[1]
@@ -161,4 +126,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
