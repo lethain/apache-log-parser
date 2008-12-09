@@ -79,10 +79,12 @@ def subscriptions(filename, cutoff, quantity):
 
     """
 Feedfetcher-Google; (+http://www.google.com/feedfetcher.html; 3 subscribers; feed-id=7675226481817637975)
+Netvibes (http://www.netvibes.com/; 5 subscribers; feedId: 5404723)
+
+
 Bloglines/3.1 (http://www.bloglines.com; 1 subscriber)
 NewsGatorOnline/2.0 (http://www.newsgator.com; 1 subscribers)
 Zhuaxia.com 1 Subscribers
-Netvibes (http://www.netvibes.com/; 5 subscribers; feedId: 5404723)
 AideRSS/1.0 (aiderss.com); 2 subscribers
 xianguo-rssbot/0.1 (http://www.xianguo.com/; 1 subscribers)
 Fastladder FeedFetcher/0.01 (http://fastladder.com/; 1 subscriber)
@@ -90,8 +92,8 @@ HanRSS/1.1 (http://www.hanrss.com; 1 subscriber)
 livedoor FeedFetcher/0.01 (http://reader.livedoor.com/; 1 subscriber)
     """
 
-    # '(?P<ip>[.\d]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?) HTTP/1.\d" (?P<status_code>\d+) \d+ ".*?" "(?P<agent>.*?)"'
-    feed_re = '(?P<name>.*?) \(.*?; (?P<count>\d+) subscribers?\)'
+
+    feed_re = '(?P<name>.*?) \(.*?; (?P<count>\d+) subscribers?(; .*?)?\)'
     search = re.compile(feed_re).search
     for key, readers in feeds.iteritems():
         sources = {}
@@ -100,7 +102,8 @@ livedoor FeedFetcher/0.01 (http://reader.livedoor.com/; 1 subscriber)
             if not m:
                 print "did not match: %s" % reader
             else:
-                print "match: %s %s" % (m.group('name'), m.group('count'))
+                pass
+                #print "match: %s %s" % (m.group('name'), m.group('count'))
             #print reader
 
 
