@@ -6,25 +6,9 @@ Inspired by
 
 import re
 from optparse import OptionParser
-
-"""
-127.0.0.1 - - [02/Dec/2008:09:45:19 -0600] "GET /favicon.ico HTTP/1.0" 404 4630 "http://lethain.com/" "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_5; en-us) AppleWebKit/528.5+ (KHTML, like Gecko) Version/3.2.1 Safari/525.27.1"
-
-
-
-127.0.0.1
- - - 
-[02/Dec/2008:09:45:19 -0600]
-"GET /favicon.ico HTTP/1.0"
-404
-4630
-"http://lethain.com/"
-"Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_5; en-us) AppleWebKit/528.5+ (KHTML, like Gecko) Version/3.2.1 Safari/525.27.1"
-
-"""
 from operator import itemgetter
 
-def parse(filename, cutoff=None):
+def parse(filename, cutoff=None, quantity=None):
     log_re = '"GET (.*?) HTTP/1.\d"'
     search = re.compile(log_re).search
 
@@ -42,7 +26,8 @@ def parse(filename, cutoff=None):
 
     if cutoff:
         sorted_lst = (x for x in sorted_lst if x[1] > cutoff)
-
+    if quantity:
+        sorted_lst = sorted_lst[:quantity]
 
     for uri,count in sorted_lst:
         print "%s => %s" % (uri, count)
@@ -50,13 +35,17 @@ def parse(filename, cutoff=None):
 def main():
     p = OptionParser("usage: parser.py file")
     p.add_option('-c','--cutoff',dest='cutoff',
-                 help="CUTOFF for minimum hits, default is 250",
+                 help="CUTOFF for minimum hits",
                  metavar="CUTOFF")
+    p.add_option('-q','--quantity',dest='quantity',
+                 help="QUANTITY of results to return",
+                 metavar="QUANTITY")
     (options, args) = p.parse_args()
     if len(args) < 1:
         p.error("must specify a file to parse")
     cutoff = int(options.cutoff) if options.cutoff else None
-    parse(args[0], cutoff=cutoff)
+    qty = int(options.quantity) if options.quantity else None
+    parse(args[0], cutoff=cutoff, quantity=qty)
 
 if __name__ == '__main__':
     main()
