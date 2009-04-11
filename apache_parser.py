@@ -18,9 +18,10 @@ def parse(filename):
             'uri':x.group('uri'),
             'time':x.group('time'),
             'status_code':x.group('status_code'),
+            'referral':x.group('referral'),
             'agent':x.group('agent'),
             }
-    log_re = '(?P<ip>[.\d]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?) HTTP/1.\d" (?P<status_code>\d+) \d+ ".*?" "(?P<agent>.*?)"'
+    log_re = '(?P<ip>[.\d]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?) HTTP/1.\d" (?P<status_code>\d+) \d+ "(?P<referral>.*?)" "(?P<agent>.*?)"'
     search = re.compile(log_re).search
     matches = (search(line) for line in file(filename))
     return (make_entry(x) for x in matches if x)
@@ -99,7 +100,7 @@ def subscriptions(filename, cutoff, quantity):
     print_results(results)
     
 def main():
-    p = OptionParser("usage: parser.py file uri|time|status_code|agent|subscriptions")
+    p = OptionParser("usage: parser.py file uri|time|status_code|agent|referral|subscriptions")
     p.add_option('-c','--cutoff',dest='cutoff',
                  help="CUTOFF for minimum hits",
                  metavar="CUTOFF")
@@ -119,7 +120,7 @@ def main():
     
     if report_type == 'subscriptions':
         subscriptions(filename, cutoff=cutoff, quantity=qty)
-    elif report_type in ['uri','time','status_code','agent']:
+    elif report_type in ['uri','time','status_code','agent','referral']:
         generic_report_for_key(report_type, filename, cutoff, qty)
     else:
         p.error("specified an invalid report type")
