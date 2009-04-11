@@ -9,6 +9,7 @@ At this time it supports generating supports for:
 * **uri** - pageviews for each uri
 * **time** - datetime with highest request/second
 * **status_code** - hits for each http status code
+* **referral** - uris of referring sites
 * **agent** - hits for each user agent
 * **subscriptions** - the number of feed subscribers per uri.
     This is done by parsing user agents for their subscriber count.
