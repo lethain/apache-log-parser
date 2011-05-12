@@ -21,7 +21,7 @@ def parse(filename):
             'referral':x.group('referral'),
             'agent':x.group('agent'),
             }
-    log_re = '(?P<ip>[.\d]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?) HTTP/1.\d" (?P<status_code>\d+) \d+ "(?P<referral>.*?)" "(?P<agent>.*?)"'
+    log_re = '(?P<ip>[.:0-9a-fA-F]+) - - \[(?P<time>.*?)\] "GET (?P<uri>.*?) HTTP/1.\d" (?P<status_code>\d+) \d+ "(?P<referral>.*?)" "(?P<agent>.*?)"'
     search = re.compile(log_re).search
     matches = (search(line) for line in file(filename))
     return (make_entry(x) for x in matches if x)
